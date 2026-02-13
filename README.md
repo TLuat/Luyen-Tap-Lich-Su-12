@@ -1,1 +1,1 @@
-# Luy-n-T-p-L-ch-S-12---Ch-H-c-Thu-c
+#Luyện Tập Lịch Sử 12 - Chế Độ Học Thuộc
