@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Tập Lịch Sử 12 - Chế Độ Học Thuộc</title>
+    <style>
+        :root {
+            --primary-color: #009688;
+            --bg-color: #f0f2f5;
+            --white: #ffffff;
+            --text-color: #333;
+            --error-color: #e91e63;
+            --success-color: #4caf50;
+            --warning-bg: #e3f2fd;
+            --warning-text: #0d47a1;
+            --exam-code-color: #d32f2f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Màn hình bắt đầu */
+        #start-screen {
+            text-align: center;
+            background: var(--white);
+            padding: 50px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .desc {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 150, 136, 0.3);
+        }
+
+        .btn:hover {
+            background-color: #00796b;
+            transform: translateY(-2px);
+        }
+
+        .btn-retry {
+            background-color: #ff9800;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-retry:hover {
+            background-color: #f57c00;
+        }
+
+        /* Màn hình làm bài */
+        #quiz-screen, #result-screen {
+            display: none;
+        }
+
+        /* Header của đề thi */
+        .exam-header {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            text-align: center;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .exam-code-title {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: var(--exam-code-color);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .quiz-header-notice {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            margin: 0 auto;
+            border: 1px solid #bbdefb;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            padding: 15px 0;
+            z-index: 100;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background-color: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 6px solid #ccc; /* Mặc định màu xám */
+            transition: border-left-color 0.3s;
+            scroll-margin-top: 100px; /* Để khi scroll không bị che bởi thanh progress */
+        }
+        
+        /* Trạng thái viền trái của thẻ câu hỏi */
+        .question-card.status-correct { border-left-color: var(--success-color); }
+        .question-card.status-wrong { border-left-color: var(--error-color); }
+
+        .question-number {
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .answers-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .answer-label {
+            display: flex;
+            align-items: flex-start; /* Để căn lề trên */
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+            position: relative;
+            flex-wrap: wrap; /* Cho phép xuống dòng nếu cần */
+        }
+
+        .answer-label:hover {
+            background-color: #f1f1f1;
+            border-color: #aaa;
+        }
+
+        .answer-label input {
+            display: none; 
+        }
+
+        .choice-letter {
+            width: 30px;
+            height: 30px;
+            background-color: #ddd;
+            color: #555;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            margin-top: -2px;
+        }
+
+        .choice-text {
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        /* STYLES CHO CHẾ ĐỘ LUYỆN TẬP - PHẢN HỒI TỨC THÌ */
+        
+        /* Khi chọn ĐÚNG */
+        .answer-label.immediate-correct {
+            background-color: #e8f5e9 !important;
+            border-color: var(--success-color) !important;
+            color: #2e7d32;
+        }
+        .answer-label.immediate-correct .choice-letter {
+            background-color: var(--success-color) !important;
+            color: white !important;
+        }
+
+        /* Khi chọn SAI */
+        .answer-label.immediate-wrong {
+            background-color: #ffebee !important;
+            border-color: var(--error-color) !important;
+            color: #c62828;
+            opacity: 1 !important; /* Đảm bảo không bị mờ */
+        }
+        .answer-label.immediate-wrong .choice-letter {
+            background-color: var(--error-color) !important;
+            color: white !important;
+        }
+
+        /* Dòng thông báo Đúng/Sai chèn vào đáp án */
+        .status-badge {
+            display: block;
+            width: 100%;
+            font-size: 0.9em;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(0,0,0,0.1);
+            font-weight: bold;
+            padding-left: 45px; /* Thụt đầu dòng cho thẳng với text */
+        }
+
+        .status-badge.correct { color: var(--success-color); }
+        .status-badge.wrong { color: var(--error-color); }
+
+        /* Kết quả */
+        .score-box {
+            text-align: center;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .score-number {
+            font-size: 3.5em;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .question-card { padding: 15px; }
+            .question-text { font-size: 1.1em; }
+            .score-number { font-size: 2.5em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="start-screen">
+            <h1>TRẮC NGHIỆM SỬ 12 ÔN TẬP GK 2</h1>
+            <p class="desc">Chế độ học thuộc & Luyện phản xạ - <b>70 câu</b></p>
+            
+            <div class="quiz-header-notice" style="margin-bottom: 20px; background-color: #e0f7fa; color: #006064; border-color: #4dd0e1;">
+                <h3 style="margin-bottom: 5px; color: #00838f;">💡 CHẾ ĐỘ LUYỆN TẬP</h3>
+                Chọn đáp án sẽ biết kết quả <b>ĐÚNG/SAI NGAY LẬP TỨC</b>.<br>
+                Hệ thống sẽ <b>tự động chuyển câu sau 1 giây</b>.
+            </div>
+            <br>
+            <button class="btn" onclick="startQuiz()">TẠO MÃ ĐỀ & BẮT ĐẦU HỌC</button>
+
+            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; font-size: 0.95em; color: #555;">
+                Người thiết kế: <b style="color: var(--primary-color);">Trương Bá Long - 12A1</b>
+            </div>
+        </div>
+
+        <div id="quiz-screen">
+            <div class="exam-header">
+                <div class="exam-code-title">MÃ ĐỀ: <span id="display-exam-code">000</span></div>
+                <div class="quiz-header-notice">
+                    CHẾ ĐỘ LUYỆN TẬP: Tự động chuyển câu sau khi chọn đáp án.
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span id="progress-text">Câu 0/70</span>
+                    <span>Đang học bài...</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div id="questions-container">
+                <!-- Câu hỏi sẽ được render ở đây -->
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="submitQuiz()">KẾT THÚC & XEM TỔNG KẾT</button>
+            </div>
+        </div>
+
+        <div id="result-screen">
+            <div class="score-box">
+                <h2>TỔNG KẾT BÀI LUYỆN TẬP</h2>
+                <h3 style="color: var(--exam-code-color); margin-top: 10px;">Mã đề: <span id="result-exam-code">000</span></h3>
+                
+                <div class="score-number" id="final-score">0/70</div>
+                <p id="score-percent" style="font-size: 1.2em; color: #666;">0%</p>
+                <p style="margin-top: 10px; color: #555; font-style: italic;">(Điểm số tính dựa trên đáp án cuối cùng bạn chọn)</p>
+                
+                <button class="btn btn-retry" onclick="restartQuiz()">TẠO ĐỀ MỚI & LUYỆN TIẾP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DỮ LIỆU CÂU HỎI GỐC (70 câu) ---
+        const rawQuestions = [
+            {
+                question: "Hoạt động đối ngoại của các sĩ phu yêu nước thức thời đầu thế kỉ XX ở Việt Nam diễn ra trong bối cảnh nào sau đây?",
+                answers: [
+                    { text: "Cuộc Chiến tranh thế giới thứ hai bùng nổ và lan rộng.", correct: false },
+                    { text: "Tư tưởng dân chủ tư sản được truyền bá vào Việt Nam.", correct: true },
+                    { text: "Chủ nghĩa phát xít đã xuất hiện và chạy đua vũ trang.", correct: false },
+                    { text: "Khuynh hướng dân chủ tư sản đã thất bại ở Việt Nam.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh đúng yêu cầu của hoạt động đối ngoại diễn ra đầu thế kỉ XX đến năm 1925 ở Việt Nam?",
+                answers: [
+                    { text: "Tìm kiếm con đường cứu nước thay thế ngọn cờ phong kiến.", correct: true },
+                    { text: "Tìm kiếm con đường cứu nước mới thay thế ngọn cờ vô sản.", correct: false },
+                    { text: "Tranh thủ các lực lượng Đồng minh để giải phóng dân tộc.", correct: false },
+                    { text: "\"Bế quan tỏa cảng\" để hạn chế sự ảnh hưởng từ bên ngoài.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh đúng nhiệm vụ của hoạt động đối ngoại diễn ra đầu thế kỉ XX đến năm 1925 ở Việt Nam?",
+                answers: [
+                    { text: "Sách lược tranh thủ các lực lượng Đồng minh để giải phóng dân tộc.", correct: false },
+                    { text: "Hợp tác có nguyên tắc với bên ngoài nhằm chống phát xít Nhật Bản.", correct: false },
+                    { text: "Sách lược phân hóa đối phương tiến hành cách mạng dân tộc dân chủ.", correct: false },
+                    { text: "Tìm kiếm sự giúp đỡ của các lực lượng tiến bộ để giành độc lập dân tộc.", correct: true }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Phan Bội Châu từ đầu thế kỉ XX đến năm 1925 diễn ra ở",
+                answers: [
+                    { text: "Nhật Bản, Anh, Pháp và Đông Nam Á.", correct: false },
+                    { text: "Mĩ, Anh, Trung Quốc và Đông Nam Á.", correct: false },
+                    { text: "Nhật Bản, Trung Quốc và Đông Nam Á.", correct: true },
+                    { text: "Trung Quốc, Ấn Độ và Liên bang Nga.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1905-1909, Phan Bội Châu có hoạt động đối ngoại nổi bật nào sau đây?",
+                answers: [
+                    { text: "Tham gia thành lập Đông Á Đồng minh hội.", correct: true },
+                    { text: "Thành lập tổ chức Việt Nam Quang phục hội.", correct: false },
+                    { text: "Tham gia sáng lập Hội Chấn Hoa Hưng Á.", correct: false },
+                    { text: "Tiếp xúc với các lực lượng cấp tiến tại Pháp.", correct: false }
+                ]
+            },
+            {
+                question: "Đâu không phải là hoạt động đối ngoại của Phan Bội Châu trong giai đoạn 1905-1909?",
+                answers: [
+                    { text: "Tham gia thành lập Đông Á Đồng minh hội.", correct: false },
+                    { text: "Tham gia thành lập Điền - Quế - Việt liên minh.", correct: false },
+                    { text: "Tổ chức phong trào đưa sinh viên sang Nhật Bản.", correct: false },
+                    { text: "Lập Hội Liên hiệp các dân tộc bị áp bức Á Đông.", correct: true }
+                ]
+            },
+            {
+                question: "Mục đích chính của tổ chức Điền - Quế - Việt liên minh do Phan Bội Châu lập ra năm 1908 là",
+                answers: [
+                    { text: "dựa vào Đồng minh chống phát xít.", correct: false },
+                    { text: "giúp đỡ nhau giành độc lập dân tộc.", correct: true },
+                    { text: "tạo dựng quan hệ Việt Nam và Xiêm.", correct: false },
+                    { text: "tiến hành một cuộc tổng khởi nghĩa.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1909 - 1925, Phan Bội Châu có hoạt động đối ngoại nổi bật nào sau đây?",
+                answers: [
+                    { text: "Liên lạc với Công sứ Đức, Đại sứ quán Nga.", correct: true },
+                    { text: "Liên lạc với Công sứ Anh, Đại sứ quán Nga.", correct: false },
+                    { text: "Liên lạc với Công sứ Đức, Đại sứ quán Nhật.", correct: false },
+                    { text: "Liên lạc với Công sứ Đức, Đại sứ quán Mĩ.", correct: false }
+                ]
+            },
+            {
+                question: "Đâu không phải là hoạt động đối ngoại của Phan Bội Châu trong giai đoạn 1909-1925?",
+                answers: [
+                    { text: "Thành lập tổ chức Điền - Quế - Việt liên minh.", correct: true },
+                    { text: "Thành lập tổ chức Việt Nam Quang phục hội.", correct: false },
+                    { text: "Tham gia sáng lập Hội Chấn Hoa Hưng Á.", correct: false },
+                    { text: "Liên lạc với Công sứ Đức, Đại sứ quán Nga.", correct: false }
+                ]
+            },
+            {
+                question: "Một số lãnh đạo của Hội Chấn Hoa Hưng Á được mời tham gia ban lãnh đạo Việt Nam Quang phục hội nhằm",
+                answers: [
+                    { text: "đoàn kết các nước thuộc địa chống đế quốc và phong kiến.", correct: false },
+                    { text: "tạo dựng sự gắn kết cách mạng Trung Quốc và Việt Nam.", correct: true },
+                    { text: "mở rộng khối nước Đồng minh chống chủ nghĩa phát xít.", correct: false },
+                    { text: "xây dựng một liên minh dân chủ rộng rãi trên toàn thế giới.", correct: false }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Phan Châu Trinh trong những năm đầu thế kỉ XX nhằm mục đích?",
+                answers: [
+                    { text: "Vận động cải cách cho Việt Nam.", correct: true },
+                    { text: "Tiến hành cuộc bạo động cách mạng.", correct: false },
+                    { text: "Nhận viện trợ để xây dựng đất nước.", correct: false },
+                    { text: "Chống bộ kẻ thù chủ yếu của dân tộc.", correct: false }
+                ]
+            },
+            {
+                question: "Đâu không phải là hoạt động đối ngoại nổi bật của Phan Châu Trinh trong những năm đầu thế kỉ XX",
+                answers: [
+                    { text: "Lên án chính sách cai trị của thực dân Pháp ở Đông Dương.", correct: false },
+                    { text: "Tiếp xúc với các lực lượng cấp tiến tại Pháp để tranh thủ sự ủng hộ của họ.", correct: false },
+                    { text: "Viết báo để thức tỉnh dư luận Pháp về tình hình ở Việt Nam.", correct: false },
+                    { text: "Tham gia thành lập tổ chức Điền - Quế - Việt liên minh.", correct: true }
+                ]
+            },
+            {
+                question: "Một trong những hoạt động đối ngoại của Nguyễn Ái Quốc trong những năm 1919 - 1923 là",
+                answers: [
+                    { text: "tham gia sáng lập Đảng Cộng sản Pháp.", correct: true },
+                    { text: "thành lập tổ chức Việt Nam Quang phục hội.", correct: false },
+                    { text: "tham gia sáng lập Hội Chấn Hoa Hưng Á.", correct: false },
+                    { text: "tham gia thành lập Đông Á Đồng minh hội.", correct: false }
+                ]
+            },
+            {
+                question: "Đâu không phải là hoạt động đối ngoại nổi bật của Nguyễn Ái Quốc trong những năm 1919-1923?",
+                answers: [
+                    { text: "Tham gia sáng lập Đảng Cộng sản Pháp.", correct: false },
+                    { text: "Thành lập Hội Liên hiệp thuộc địa ở Pari.", correct: false },
+                    { text: "Chính thức gia nhập Đảng Xã hội Pháp.", correct: false },
+                    { text: "Thành lập Điền - Quế - Việt liên minh.", correct: true }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Nguyễn Ái Quốc tại Liên Xô trong những năm 1923 - 1924 có ý nghĩa như thế nào?",
+                answers: [
+                    { text: "Xác lập mối quan hệ giữa cách mạng Việt Nam với Quốc tế Cộng sản.", correct: true },
+                    { text: "Nhận ủng hộ của lực lượng cấp tiến tại Pháp cho cách mạng Việt Nam.", correct: false },
+                    { text: "Liên lạc với phong trào chống Nhật Bản ở một số nước Đông Nam Á.", correct: false },
+                    { text: "Phối hợp với lực lượng Đồng minh chống phát xít giải phóng dân tộc.", correct: false }
+                ]
+            },
+            {
+                question: "Một trong những hoạt động đối ngoại của Nguyễn Ái Quốc trong những năm 1923-1930 là",
+                answers: [
+                    { text: "tham gia thành lập Đông Á Đồng minh hội.", correct: false },
+                    { text: "tham gia thành lập Điền - Quế - Việt liên minh.", correct: false },
+                    { text: "tổ chức phong trào đưa sinh viên sang Nhật Bản.", correct: false },
+                    { text: "lập Hội Liên hiệp các dân tộc bị áp bức Á Đông.", correct: true }
+                ]
+            },
+            {
+                question: "Đâu không phải là hoạt động đối ngoại nổi bật của Nguyễn Ái Quốc trong những năm 1923-1930?",
+                answers: [
+                    { text: "Tham gia hội nghị, đại hội của Quốc tế Cộng sản.", correct: false },
+                    { text: "Lập Hội Liên hiệp các dân tộc bị áp bức Á Đông.", correct: false },
+                    { text: "Tham gia thành lập Hội Liên hiệp thuộc địa ở Pari.", correct: true },
+                    { text: "Liên lạc các lực lượng cách mạng ở Đông Nam Á.", correct: false }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Đảng Cộng sản Đông Dương giai đoạn 1930 – 1945 không ảnh hưởng của bối cảnh quốc tế nào sau đây?",
+                answers: [
+                    { text: "Cuộc khủng hoảng kinh tế thế giới.", correct: false },
+                    { text: "Chủ nghĩa phát xít bắt đầu xuất hiện.", correct: false },
+                    { text: "Cuộc Chiến tranh thế giới lần thứ hai.", correct: false },
+                    { text: "Cuộc Chiến tranh thế giới lần thứ nhất.", correct: true }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Đảng Cộng sản Đông Dương giai đoạn 1930 - 1945 diễn ra trong bối cảnh thuận lợi nào sau đây?",
+                answers: [
+                    { text: "Cuộc khủng hoảng kinh tế thế giới.", correct: false },
+                    { text: "Chủ nghĩa phát xít bắt đầu xuất hiện.", correct: false },
+                    { text: "Cuộc Chiến tranh thế giới lần thứ hai.", correct: false },
+                    { text: "Đảng Cộng sản ra đời ở Đông Dương.", correct: true }
+                ]
+            },
+            {
+                question: "Một trong những hoạt động đối ngoại của Đảng Cộng sản Đông Dương 1930 - 1939 là",
+                answers: [
+                    { text: "ủng hộ Liên Xô đấu tranh chống phát xít, bảo vệ hòa bình thế giới.", correct: false },
+                    { text: "thành lập Ban chỉ huy ở hải ngoại của Đảng Cộng sản Đông Dương.", correct: true },
+                    { text: "lập Tiểu ban vận động Hoa kiều, giúp người Nhật tổ chức Hội Cứu quốc.", correct: false },
+                    { text: "liên lạc với phong trào chống Nhật Bản ở một số nước Đông Nam Á.", correct: false }
+                ]
+            },
+            {
+                question: "Một trong những hoạt động đối ngoại của Mặt trận Việt Minh trong giai đoạn chuẩn bị cho cuộc Tổng khởi nghĩa tháng Tám năm 1945 ở Việt Nam là",
+                answers: [
+                    { text: "tiến hành hợp tác trao đổi thông tin với Cơ quan tình báo Mỹ.", correct: true },
+                    { text: "mở lớp huấn luyện chính trị cho thanh niên yêu nước Việt Nam.", correct: false },
+                    { text: "tham gia thành lập tổ chức Hội Liên hiệp thuộc địa ở Pari.", correct: false },
+                    { text: "lập Đông Á Đồng minh hội và Điền - Quế - Việt liên minh.", correct: false }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Phan Bội Châu giai đoạn từ đầu thế kỉ XX đến năm 1925 không có ý nghĩa nào sau đây?",
+                answers: [
+                    { text: "Tạo chuyển biến trong nội dung tư tưởng của phong trào cách mạng.", correct: false },
+                    { text: "Kết nối phong trào yêu nước với các quốc gia cùng cảnh ngộ châu Á.", correct: false },
+                    { text: "Tạo thế đứng cho các nhà yêu nước khác hoạt động ở Trung Quốc.", correct: false },
+                    { text: "Đặt cơ sở cho các mối quan hệ quốc tế của Đảng Cộng sản Việt Nam.", correct: true }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Phan Châu Trinh giai đoạn từ đầu thế kỉ XX đến năm 1925 không có ý nghĩa nào sau đây?",
+                answers: [
+                    { text: "Thay đổi tư duy kinh tế, đưa nền kinh tế phát triển theo hướng mới.", correct: false },
+                    { text: "Thay đổi tư duy văn hóa, nền Hán học, truyền bá văn minh tiến bộ.", correct: false },
+                    { text: "Tìm kiếm sự ủng hộ của phe Đồng minh chống phát xít giành độc lập.", correct: true },
+                    { text: "Tạo chuyển biến trong nội dung tư tưởng của phong trào cách mạng.", correct: false }
+                ]
+            },
+            {
+                question: "Điểm chung về ý nghĩa hoạt động đối ngoại của Phan Bội Châu và Phan Châu Trinh (giai đoạn từ đầu thế kỉ XX đến năm 1925) là",
+                answers: [
+                    { text: "tạo chuyển biến trong nội dung tư tưởng của phong trào cách mạng.", correct: true },
+                    { text: "kết nối phong trào yêu nước với các quốc gia cùng cảnh ngộ châu Á.", correct: false },
+                    { text: "tạo thế đứng cho các nhà yêu nước khác hoạt động ở Trung Quốc.", correct: false },
+                    { text: "đặt cơ sở cho các mối quan hệ quốc tế của Đảng Cộng sản Việt Nam.", correct: false }
+                ]
+            },
+            {
+                question: "Điểm khác trong hoạt động đối ngoại của Nguyễn Ái Quốc giai đoạn 1911 - 1930 so với các tiền bối đi trước là",
+                answers: [
+                    { text: "hướng đi, cách tiếp cận hoạt động đối ngoại.", correct: true },
+                    { text: "mục đích cuối cùng của hoạt động đối ngoại.", correct: false },
+                    { text: "chủ trương dựa vào Nhật Bản để đánh Pháp.", correct: false },
+                    { text: "chủ trương dựa vào Pháp chống phong kiến.", correct: false }
+                ]
+            },
+            {
+                question: "Mục đích chính của Nguyễn Ái Quốc khi lựa chọn đi sang phương Tây để tìm đường cứu nước là",
+                answers: [
+                    { text: "muốn tìm kiếm sự giúp đỡ của nhân dân tiến bộ thế giới.", correct: false },
+                    { text: "muốn tìm hiểu rõ bản chất bên trong của kẻ thù xâm lược.", correct: true },
+                    { text: "tranh thủ sự ủng hộ của các nước tư bản chủ nghĩa tiến bộ.", correct: false },
+                    { text: "thực hiện theo sự chỉ đạo của tổ chức Quốc tế Cộng sản.", correct: false }
+                ]
+            },
+            {
+                question: "Điểm mới trong quan điểm đối ngoại của Nguyễn Ái Quốc so với các nhà cách mạng tiền bối là",
+                answers: [
+                    { text: "phải dựa vào bên ngoài trong tiến trình cách mạng giải phóng.", correct: false },
+                    { text: "sự giúp đỡ từ bên ngoài quyết định thắng lợi của cách mạng.", correct: false },
+                    { text: "cách mạng Việt Nam là một bộ phận của cách mạng thế giới.", correct: true },
+                    { text: "phải thành lập được các tổ chức chính trị bên ngoài lãnh thổ.", correct: false }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Nguyễn Ái Quốc tại Pháp, Liên Xô và Trung Quốc (1911 – 1930) có ý nghĩa như thế nào?",
+                answers: [
+                    { text: "Góp phần xây dựng lí luận về đối ngoại của Đảng Cộng sản Việt Nam.", correct: true },
+                    { text: "Nhận sự ủng hộ về chính trị và sự viện trợ về kinh tế của các quốc gia.", correct: false },
+                    { text: "Giúp các nhà yêu nước khác tiếp tục hoạt động công khai ở bên ngoài.", correct: false },
+                    { text: "Mở rộng không gian địa lý của hậu phương cho cách mạng trong nước.", correct: false }
+                ]
+            },
+            {
+                question: "Quan điểm về đường lối đối ngoại của Đảng Cộng sản Việt Nam được thể hiện lần đầu tiên ở",
+                answers: [
+                    { text: "Cương lĩnh chính trị đầu tiên của Đảng Cộng sản Việt Nam (1930).", correct: true },
+                    { text: "Luận cương chính trị của Đảng Cộng sản Đông Dương (1930).", correct: false },
+                    { text: "Nghị quyết Hội nghị lần thứ 6 Đảng Cộng sản Đông Dương (1939).", correct: false },
+                    { text: "Nghị quyết Hội nghị lần thứ 8 Đảng Cộng sản Đông Dương (1930-1940).", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh không đúng bài học kinh nghiệm rút ra từ hoạt động đối ngoại của Đảng Cộng sản Đông Dương (1930-1940) cho công cuộc xây dựng và bảo vệ Tổ quốc hiện nay?",
+                answers: [
+                    { text: "Tôn trọng lẫn nhau, hướng tới mục tiêu chung và lợi ích chung của các dân tộc.", correct: false },
+                    { text: "Giữ vững độc lập, tự chủ, đẩy mạnh đa dạng hóa, đa phương hóa quan hệ đối ngoại.", correct: false },
+                    { text: "Tranh thủ sự ủng hộ từ bên ngoài trong cuộc đấu tranh giành độc lập, bảo vệ Tổ quốc.", correct: true },
+                    { text: "Tranh thủ yếu tố bên ngoài nhưng phải nêu cao tính tự lực, dựa vào sức mình là chính.", correct: false }
+                ]
+            },
+            {
+                question: "Sau ngày 2-9-1945, hoạt động đối ngoại của Việt Nam diễn ra trong bối cảnh nào sau đây?",
+                answers: [
+                    { text: "Nhà nước Việt Nam Dân chủ Cộng hòa đã ra đời.", correct: true },
+                    { text: "Việt Nam đã thoát khỏi tình thế bao vây và cô lập.", correct: false },
+                    { text: "Miền Nam tiến hành cuộc kháng chiến chống Mĩ.", correct: false },
+                    { text: "Cách mạng xã hội chủ nghĩa tiến hành trên cả nước.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh không đúng bối cảnh hoạt động đối ngoại của Việt Nam sau ngày 2-9-1945?",
+                answers: [
+                    { text: "Hệ thống xã hội chủ nghĩa dần hình thành trên thế giới.", correct: false },
+                    { text: "Xu thế hòa hoãn Đông - Tây trên thế giới đã xuất hiện.", correct: true },
+                    { text: "Việt Nam chưa thoát khỏi tình thế bị bao vây và cô lập.", correct: false },
+                    { text: "Việt Nam chưa được quốc gia nào đặt quan hệ ngoại giao.", correct: false }
+                ]
+            },
+            {
+                question: "Sau ngày 2-9-1945, hoạt động đối ngoại của Việt Nam không nhằm mục đích nào sau đây?",
+                answers: [
+                    { text: "Tranh thủ sự ủng hộ tích cực của quốc tế.", correct: false },
+                    { text: "Tránh đối đầu cùng lúc với nhiều kẻ thù.", correct: false },
+                    { text: "Bảo vệ vững chắc thành quả cách mạng.", correct: false },
+                    { text: "Giúp Lào hàn gắn vết thương chiến tranh.", correct: true }
+                ]
+            },
+            {
+                question: "Nguyên tắc chung của hoạt động đối ngoại của Việt Nam sau ngày 2-9-1945 đến trước ngày 6-3-1946 là",
+                answers: [
+                    { text: "bình đẳng và tương trợ.", correct: true },
+                    { text: "trung lập và tích cực.", correct: false },
+                    { text: "quan hệ tất cả các nước.", correct: false },
+                    { text: "tạm thời bẻ quan tòa công.", correct: false }
+                ]
+            },
+            {
+                question: "Từ sau ngày 2-9-1945 đến trước ngày 6-3-1946, đối với quân Trung Hoa Dân quốc, Chính phủ Việt Nam Dân chủ Cộng hòa chủ trương",
+                answers: [
+                    { text: "hòa hoãn và tránh xung đột.", correct: true },
+                    { text: "kiên quyết đấu tranh đến cùng.", correct: false },
+                    { text: "cứng rắn về sách lược.", correct: false },
+                    { text: "mềm dẻo về nguyên tắc.", correct: false }
+                ]
+            },
+            {
+                question: "Từ sau ngày 2-9-1945 đến trước ngày 6-3-1946, đối với thực dân Pháp, Chính phủ Việt Nam Dân chủ Cộng hòa chủ trương",
+                answers: [
+                    { text: "hòa hoãn và tránh xung đột.", correct: false },
+                    { text: "kiên quyết đấu tranh đến cùng.", correct: true },
+                    { text: "cứng rắn về sách lược.", correct: false },
+                    { text: "mềm dẻo về nguyên tắc.", correct: false }
+                ]
+            },
+            {
+                question: "Từ sau ngày 2-9-1945 đến trước ngày 6-3-1946, hoạt động đối ngoại của Việt Nam có tác động như thế nào?",
+                answers: [
+                    { text: "Tránh được một lúc phải đối đầu với nhiều kẻ thù.", correct: true },
+                    { text: "Nhận được sự giúp đỡ của Trung Quốc và Liên Xô.", correct: false },
+                    { text: "Giúp Việt Nam thoát khỏi tình thế bao vây, cô lập.", correct: false },
+                    { text: "Giúp Việt Nam xây dựng thành công chủ nghĩa xã hội.", correct: false }
+                ]
+            },
+            {
+                question: "Từ sau ngày 2-9-1945 đến trước ngày 6-3-1946, hoạt động đối ngoại của Việt Nam không có tác động nào sau đây?",
+                answers: [
+                    { text: "Tránh được một lúc phải đối đầu với nhiều kẻ thù.", correct: false },
+                    { text: "Góp phần vào việc phân hóa cao độ kẻ thù xâm lược.", correct: false },
+                    { text: "Bảo vệ thành quả của Cách mạng tháng Tám (1945).", correct: false },
+                    { text: "Xóa bỏ âm mưu trở lại xâm lược Việt Nam của Pháp.", correct: true }
+                ]
+            },
+            {
+                question: "Từ ngày 6-3-1946 đến trước ngày 19-12-1946, đối với quân Trung Hoa Dân quốc và thực dân Pháp, Chính phủ Việt Nam Dân chủ Cộng hòa chủ trương",
+                answers: [
+                    { text: "hòa với Pháp để đuổi Tưởng về nước.", correct: true },
+                    { text: "hòa với Tưởng để đuổi Pháp về nước.", correct: false },
+                    { text: "kiên quyết kháng chiến đến cùng.", correct: false },
+                    { text: "cứng rắn và không nhượng bộ chúng.", correct: false }
+                ]
+            },
+            {
+                question: "Năm 1946, Chính phủ Việt Nam Dân chủ Cộng hòa có hoạt động đối ngoại nổi bật nào sau đây với thực dân Pháp?",
+                answers: [
+                    { text: "Kí với Pháp bản Hiệp ước Hác-măng.", correct: false },
+                    { text: "Kí với Pháp bản Hiệp định Sơ bộ.", correct: true },
+                    { text: "Kí với Pháp bản Định ước Hen-xin-ki.", correct: false },
+                    { text: "Kí với Pháp bản Hiệp ước Pa-tơ-nốt.", correct: false }
+                ]
+            },
+            {
+                question: "Chính phủ Việt Nam Dân chủ Cộng hòa kí với Pháp bản Hiệp định Sơ bộ (6-3-1946) có tác dụng như thế nào?",
+                answers: [
+                    { text: "Giúp Việt Nam thoát khỏi tình thế bị bao vây.", correct: false },
+                    { text: "Giúp loại bỏ hết mọi mâu thuẫn trong xã hội.", correct: false },
+                    { text: "Tránh cùng lúc phải đối phó với nhiều kẻ thù chống Pháp.", correct: true },
+                    { text: "Tạo bước ngoặt cuộc kháng chiến.", correct: false }
+                ]
+            },
+            {
+                question: "Chính phủ Việt Nam Dân chủ Cộng hòa kí với Pháp bản Tạm ước (14-9-1946) có tác dụng như thế nào?",
+                answers: [
+                    { text: "Có thêm thời gian hòa hoãn để chuẩn bị cho cuộc kháng chiến lâu dài.", correct: true },
+                    { text: "Góp phần thắng lợi trên mặt trận quân sự chống quân Pháp ở Nam Bộ.", correct: false },
+                    { text: "Đẩy nhanh quá trình suy sụp của Pháp trong cuộc chiến tranh Việt Nam.", correct: false },
+                    { text: "Điều kiện cho Chính phủ Việt Nam đặt quan hệ ngoại giao với các nước.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1946-1949, Chính phủ Việt Nam Dân chủ Cộng hòa thực hiện hoạt động đối ngoại nào sau đây?",
+                answers: [
+                    { text: "Tăng cường ủng hộ các nước Đồng minh chống phát xít.", correct: false },
+                    { text: "Đoàn kết với dân tộc Miên, Lào và các dân tộc bị áp bức.", correct: true },
+                    { text: "Mở rộng quan hệ hợp tác toàn diện với các nước châu Á.", correct: false },
+                    { text: "Phát triển quan hệ chiến lược toàn diện với Trung Quốc.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1946-1949, Chính phủ Việt Nam Dân chủ Cộng hòa không thực hiện hoạt động đối ngoại nào sau đây?",
+                answers: [
+                    { text: "Thân thiện với các dân tộc yêu chuộng dân chủ, hòa bình.", correct: false },
+                    { text: "Mở các cơ quan đại diện ngoại giao ở một số nước châu Á.", correct: false },
+                    { text: "Cử đại diện tham gia một số hội nghị quốc tế và khu vực.", correct: false },
+                    { text: "Chính thức thành lập Liên minh nhân dân Việt - Miên - Lào.", correct: true }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1950-1954, Chính phủ Việt Nam Dân chủ Cộng hòa thực hiện hoạt động đối ngoại nào sau đây?",
+                answers: [
+                    { text: "Thiết lập quan hệ ngoại giao với tất cả các nước trên thế giới", correct: false },
+                    { text: "Thiết lập quan hệ ngoại giao với Trung Quốc và Liên Xô", correct: true },
+                    { text: "Đàm phán và kí kết Hiệp định Pari về kết thúc chiến tranh.", correct: false },
+                    { text: "Chuyển sang giai đoạn vừa đánh vừa đàm với thực dân Pháp", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1950 - 1954, Chính phủ Việt Nam Dân chủ Cộng hòa không thực hiện hoạt động đối ngoại nào sau đây?",
+                answers: [
+                    { text: "Thiết lập quan hệ ngoại giao với các nước xã hội chủ nghĩa.", correct: false },
+                    { text: "Chính thức thành lập Liên minh nhân dân Việt - Miên - Lào.", correct: false },
+                    { text: "Thành lập Hội Hữu nghị và Ủy ban Bảo vệ hòa bình thế giới.", correct: false },
+                    { text: "Đòi Mĩ và các bên liên quan thi hành nghiêm Hiệp định Pari.", correct: true }
+                ]
+            },
+            {
+                question: "Chính phủ Việt Nam Dân chủ Cộng hòa kí với Pháp bản Hiệp định Giơ-ne-vơ (1954) có ý nghĩa như thế nào?",
+                answers: [
+                    { text: "Đánh dấu thắng lợi của cuộc kháng chiến chống Pháp.", correct: true },
+                    { text: "Đánh dấu thắng lợi của cuộc kháng chiến chống Mĩ.", correct: false },
+                    { text: "Đã hoàn thành thống nhất đất nước về mặt lãnh thổ.", correct: false },
+                    { text: "Hoàn thành các nhiệm vụ chiến lược cuộc kháng chiến.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh đúng bối cảnh hoạt động đối ngoại của Việt Nam trong kháng chiến chống Mĩ (1954 - 1975)?",
+                answers: [
+                    { text: "Việt Nam đã thoát ra khỏi tình thế bị bao vây và cô lập.", correct: true },
+                    { text: "Thực dân Pháp tiến hành xâm lược Việt Nam lần thứ hai.", correct: false },
+                    { text: "Tình trạng Chiến tranh lạnh đã chấm dứt trên thế giới.", correct: false },
+                    { text: "Trật tự thế giới theo xu thế đa cực đang dần hình thành.", correct: false }
+                ]
+            },
+            {
+                question: "Một trong những nhiệm vụ của hoạt động đối ngoại của Việt Nam trong kháng chiến chống Mĩ (1954 - 1975) là",
+                answers: [
+                    { text: "góp phần xây dựng chủ nghĩa xã hội ở miền Bắc.", correct: true },
+                    { text: "hoàn thành cách mạng dân tộc dân chủ nhân dân ở miền Bắc.", correct: false },
+                    { text: "hỗ trợ lực lượng Đồng minh chống phát xít, bảo vệ hòa bình.", correct: false },
+                    { text: "hoàn thành thống nhất đất nước về mặt nhà nước trên cả nước.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh không đúng nhiệm vụ của hoạt động đối ngoại của Việt Nam trong kháng chiến chống Mĩ (1954 - 1975)?",
+                answers: [
+                    { text: "Đấu tranh chống Mĩ ở miền Nam để thống nhất đất nước.", correct: false },
+                    { text: "Góp phần xây dựng chủ nghĩa xã hội ở miền Bắc.", correct: false },
+                    { text: "Kháng chiến chống Pháp quay trở lại tái chiếm Việt Nam.", correct: true },
+                    { text: "Mở rộng và phát triển đối ngoại với các nước trên thế giới.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1954 - 1964, Chính phủ Việt Nam Dân chủ Cộng hòa có hoạt động đối ngoại chủ yếu nào sau đây?",
+                answers: [
+                    { text: "Tổ chức phong trào Đông du sang Nhật.", correct: false },
+                    { text: "Đấu tranh đòi thi hành Hiệp định Giơ-ne-vơ.", correct: true },
+                    { text: "Đàm phán và đi đến kí kết Hiệp định Pari.", correct: false },
+                    { text: "Mở rộng hợp tác toàn diện với tất cả các nước.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1954 - 1964, Chính phủ Việt Nam Dân chủ Cộng hòa không thực hiện hoạt động đối ngoại nào sau đây?",
+                answers: [
+                    { text: "Phát triển quan hệ với các nước xã hội chủ nghĩa.", correct: false },
+                    { text: "Tăng cường đoàn kết ba dân tộc Đông Dương.", correct: false },
+                    { text: "Đấu tranh đòi thi hành Hiệp định Giơ-ne-vơ.", correct: false },
+                    { text: "Tiến hành mở cửa hội nhập kinh tế thế giới.", correct: true }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1954 - 1964, Chính phủ Việt Nam Dân chủ Cộng hòa thực hiện hoạt động đối ngoại nhằm mục đích nào sau đây?",
+                answers: [
+                    { text: "Phục vụ cuộc đấu tranh đòi thi hành Hiệp định Pari.", correct: false },
+                    { text: "Phục vụ cuộc đấu tranh đòi thi hành Hiệp định Giơ-ne-vơ.", correct: true },
+                    { text: "Chiến đấu chống chiến lược \"Chiến tranh cục bộ\" của Mĩ.", correct: false },
+                    { text: "Chống chiến tranh phá hoại miền Bắc quy mô lớn của Mĩ.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1954-1964, Chính phủ Việt Nam Dân chủ Cộng hòa thực hiện hoạt động đối ngoại không nhằm mục đích nào sau đây?",
+                answers: [
+                    { text: "Tranh thủ sự viện trợ quốc tế để kháng chiến, kiến quốc.", correct: false },
+                    { text: "Tố cáo bản chất xâm lược Việt Nam của đế quốc Mĩ.", correct: false },
+                    { text: "Phục vụ cuộc đấu tranh đòi thi hành Hiệp định Giơ-ne-vơ.", correct: false },
+                    { text: "Tiến hành cuộc cách mạng dân tộc dân chủ trên cả nước.", correct: true }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1964 - 1968, Chính phủ Việt Nam Dân chủ Cộng hòa có hoạt động đối ngoại chủ yếu nào sau đây?",
+                answers: [
+                    { text: "Đấu tranh đòi Mĩ và chính quyền Sài Gòn thi hành Hiệp định Pari.", correct: false },
+                    { text: "Yêu cầu chính quyền Diệm - Nhu thi hành Hiệp định Giơ-ne-vơ.", correct: false },
+                    { text: "Tiếp tục củng cố mặt trận đoàn kết giữa ba dân tộc Đông Dương.", correct: true },
+                    { text: "Phối hợp với các lực lượng dân chủ để chống chủ nghĩa phát xít.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1964-1968, Chính phủ Việt Nam Dân chủ Cộng hòa không có hoạt động đối ngoại chủ yếu nào sau đây?",
+                answers: [
+                    { text: "Tiếp tục tuyên truyền tính chính nghĩa của cuộc kháng chiến.", correct: false },
+                    { text: "Tiếp tục tố cáo cuộc chiến tranh xâm lược của Mĩ ở Việt Nam.", correct: false },
+                    { text: "Vừa đấu tranh quân sự vừa đàm phán trên bàn ngoại giao ở Pari.", correct: true },
+                    { text: "Thúc đẩy phong trào phản đối chiến tranh của Mĩ ở Việt Nam.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1964-1968, Chính phủ Việt Nam Dân chủ Cộng hòa có hoạt động đối ngoại chủ yếu nào sau đây?",
+                answers: [
+                    { text: "Tổ chức phong trào Đông du sang Nhật.", correct: false },
+                    { text: "Đàm phán và kí kết Hiệp định Giơ-ne-vơ.", correct: false },
+                    { text: "Tiếp tục tố cáo tội ác của đế quốc Mĩ.", correct: true },
+                    { text: "Tiến hành hợp tác toàn diện với tất cả các nước.", correct: false }
+                ]
+            },
+            {
+                question: "Năm 1973, Chính phủ Việt Nam Dân chủ Cộng hòa có hoạt động đối ngoại nổi bật là",
+                answers: [
+                    { text: "thiết lập quan hệ ngoại giao với 20 quốc gia trên thế giới.", correct: true },
+                    { text: "Hội nghị cấp cao ba nước Đông Dương ra tuyên bố chung.", correct: false },
+                    { text: "thiết lập quan hệ đối tác chiến lược toàn diện với Hoa Kỳ.", correct: false },
+                    { text: "mở cửa và thực hiện đa dạng, đa phương quan hệ đối ngoại.", correct: false }
+                ]
+            },
+            {
+                question: "Trong giai đoạn 1973-1975, Chính phủ Việt Nam Dân chủ Cộng hòa thực hiện hoạt động đối ngoại nhằm mục đích nào sau đây?",
+                answers: [
+                    { text: "Hoàn thành cuộc cách mạng dân tộc dân chủ ở miền Bắc.", correct: false },
+                    { text: "Góp phần hoàn thành thống nhất đất nước về một nhà nước.", correct: false },
+                    { text: "Tố cáo Mĩ và chính quyền Sài Gòn vi phạm Hiệp định Pari.", correct: true },
+                    { text: "Phát triển quan hệ đối tác chiến lược toàn diện với Liên Xô.", correct: false }
+                ]
+            },
+            {
+                question: "Hoạt động đối ngoại của Chính phủ Việt Nam Dân chủ Cộng hòa trong giai đoạn 1968-1973 có điểm khác gì so với giai đoạn 1954-1968?",
+                answers: [
+                    { text: "Tiếp tục mở rộng quan hệ ngoại giao với các nước trên thế giới.", correct: false },
+                    { text: "Vừa đấu tranh quân sự vừa đàm phán trên bàn ngoại giao ở Pari.", correct: true },
+                    { text: "Tiếp tục củng cố mặt trận đoàn kết giữa ba nước Đông Dương.", correct: false },
+                    { text: "Tiếp tục tuyên truyền tính chính nghĩa của cuộc kháng chiến.", correct: false }
+                ]
+            },
+            {
+                question: "Việc đàm phán và ký kết Hiệp định Sơ bộ giữa đại diện Chính phủ Việt Nam Dân chủ Cộng hòa với đại diện Chính phủ Pháp (6-3-1946) đã",
+                answers: [
+                    { text: "giúp Việt Nam ngăn chặn được mọi nguy cơ xung đột với Pháp.", correct: false },
+                    { text: "thể hiện thiện chí hòa bình của hai chính phủ Việt Nam và Pháp.", correct: false },
+                    { text: "tạo thời gian hòa bình để Việt Nam tổ chức bầu cử Quốc hội.", correct: false },
+                    { text: "chuyển quan hệ giữa Việt Nam và Pháp từ đối đầu sang đối thoại.", correct: true }
+                ]
+            },
+            {
+                question: "Nội dung nào đánh giá đúng về việc kí Hiệp định Sơ bộ và bản Tạm ước năm 1946 của Chính phủ Việt Nam Dân chủ Cộng hòa?",
+                answers: [
+                    { text: "Là sự thỏa hiệp của các lực lượng cách mạng trong nước.", correct: false },
+                    { text: "Thể hiện sự thắng lợi của Pháp trên mặt trận ngoại giao.", correct: false },
+                    { text: "Thể hiện sự nhân nhượng của Pháp đối với Chính phủ ta.", correct: false },
+                    { text: "Chủ trương đúng đắn và kịp thời của Đảng và Chính phủ ta.", correct: true }
+                ]
+            },
+            {
+                question: "Cuộc đấu tranh ngoại giao của Chính phủ Việt Nam Dân chủ Cộng hòa (từ ngày 2-9-1945 đến ngày 19-12-1946) có vai trò như thế nào đối với cách mạng Việt Nam?",
+                answers: [
+                    { text: "Đã hỗ trợ đắc lực cho những thắng lợi trên mặt trận quân sự.", correct: false },
+                    { text: "Làm thất bại âm mưu lật đổ chính quyền của các thế lực đế quốc.", correct: true },
+                    { text: "Giúp Việt Nam thoát khỏi tình thế bị các nước bao vây, cô lập.", correct: false },
+                    { text: "Từng bước thiết lập quan hệ ngoại giao với các nước trên thế giới.", correct: false }
+                ]
+            },
+            {
+                question: "Nhận xét nào sau đây là đúng về bản Hiệp định Sơ bộ Việt - Pháp (ngày 6-3-1946)?",
+                answers: [
+                    { text: "Chuyển Pháp từ vị trí đối tác trở thành đối tượng của cách mạng Việt Nam.", correct: false },
+                    { text: "Là điển hình thành công về vận dụng sách lược phân hóa và cô lập kẻ thù.", correct: true },
+                    { text: "Là sách lược của Việt Nam để tiếp tục kéo dài thời gian hòa hoãn với Pháp.", correct: false },
+                    { text: "Công nhận Việt Nam là một quốc gia tự do, có quyền dân tộc tự quyết.", correct: false }
+                ]
+            },
+            {
+                question: "Cuộc đấu tranh ngoại giao của Chính phủ Việt Nam Dân chủ Cộng hòa trong năm 1946 có tác dụng như thế nào?",
+                answers: [
+                    { text: "Làm cho nhân dân thế giới hiểu rõ hơn vấn đề Việt Nam.", correct: true },
+                    { text: "Giải quyết được mục tiêu cơ bản của một cuộc cách mạng.", correct: false },
+                    { text: "Làm thất bại âm mưu xâm lược trở lại của thực dân Pháp.", correct: false },
+                    { text: "Cơ sở để các nước xã hội chủ nghĩa công nhận Việt Nam.", correct: false }
+                ]
+            },
+            {
+                question: "Sách lược đấu tranh ngoại giao của Chủ tịch Hồ Chí Minh và Chính phủ nước Việt Nam Dân chủ Cộng hòa trong năm 1946 đã",
+                answers: [
+                    { text: "từng bước loại bỏ được các thế lực ngoại xâm và nội phản.", correct: true },
+                    { text: "giải quyết được những mục tiêu chiến lược của cách mạng.", correct: false },
+                    { text: "phá vỡ được thế bao vây, cô lập của cách mạng Việt Nam.", correct: false },
+                    { text: "giải quyết được vấn đề cơ bản của cuộc cách mạng xã hội.", correct: false }
+                ]
+            },
+            {
+                question: "Nhận xét nào sau đây là đúng về đấu tranh ngoại giao ở Việt Nam thời kì 1945-1954?",
+                answers: [
+                    { text: "Phát huy thành quả thắng lợi quân sự, mở ra bước ngoặt của chiến tranh.", correct: false },
+                    { text: "Đối ngoại Đảng, ngoại giao nhà nước và đối ngoại nhân dân đã phát triển.", correct: true },
+                    { text: "Có mối quan hệ mật thiết và quyết định thắng lợi trên mặt trận quân sự.", correct: false },
+                    { text: "Đưa đến sự hình thành mặt trận nhân dân thế giới ủng hộ các nước thuộc địa.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh đúng ý nghĩa của việc kí kết Hiệp định Giơ-ne-vơ năm 1954 về Đông Dương?",
+                answers: [
+                    { text: "Phản ánh đầy đủ thắng lợi của quân dân Việt Nam và xu thế hòa hoãn chung của thế giới.", correct: false },
+                    { text: "Là văn bản pháp lý quốc tế toàn diện nhất ghi nhận các quyền dân tộc cơ bản của Việt Nam.", correct: false },
+                    { text: "Là thành quả lớn nhất của cuộc đấu tranh trên mặt trận ngoại giao trong lịch sử dân tộc.", correct: false },
+                    { text: "Là thành công của nghệ thuật thắng từng bước trong đường lối cách mạng Việt Nam.", correct: true }
+                ]
+            },
+            {
+                question: "Nhận xét phản ánh đúng về Hiệp định Pari (1973) về chấm dứt chiến tranh, lập lại hòa bình ở Việt Nam?",
+                answers: [
+                    { text: "Mĩ công nhận các quyền dân tộc cơ bản của nhân dân ta và rút một phần quân về nước.", correct: false },
+                    { text: "Tạo ra thời cơ thuận lợi để nhân dân Việt Nam tiến lên giải phóng hoàn toàn miền Nam.", correct: true },
+                    { text: "Là sự nhân nhượng có nguyên tắc của Việt Nam trong việc giành thắng lợi từng bước", correct: false },
+                    { text: "Là kết quả của sự kết hợp đấu tranh trên cả ba mặt trận chính trị, quân sự và bình vận.", correct: false }
+                ]
+            },
+            {
+                question: "Nội dung phản ánh đúng điểm tương đồng giữa Hiệp định Giơ-ne-vơ (1954) về Đông Dương và Hiệp định Pari (1973) về Việt Nam",
+                answers: [
+                    { text: "Các nước đế quốc phải công nhận tính thống nhất của Việt Nam.", correct: true },
+                    { text: "Việt Nam thể hiện tính tự chủ và tự quyết trong đấu tranh ngoại giao.", correct: false },
+                    { text: "Là kết quả của các cuộc đàm phán diễn ra nhanh chóng, hài hòa.", correct: false },
+                    { text: "Là mốc đánh dấu kết thúc các cuộc chiến tranh xâm lược của kẻ thù.", correct: false }
+                ]
+            }
+        ];
+
+        let examCode = 0;
+        let examQuestions = [];
+        let score = 0;
+        let userAnswers = [];
+        const choiceLabels = ['A', 'B', 'C', 'D'];
+
+        // --- CƠ CHẾ SEEDED RANDOM (TRỘN CÓ ĐIỀU KHIỂN) ---
+        function seededRandom(seed) {
+            let x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function shuffleWithSeed(array, seed) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom(seed + i) * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // --- BẮT ĐẦU BÀI LUYỆN TẬP ---
+        function startQuiz() {
+            // 1. Sinh mã đề ngẫu nhiên (3 chữ số)
+            examCode = Math.floor(100 + Math.random() * 900);
+            
+            // Cập nhật giao diện mã đề
+            document.getElementById('display-exam-code').innerText = examCode;
+            document.getElementById('result-exam-code').innerText = examCode;
+
+            // 2. Clone ngân hàng câu hỏi
+            let clonedQuestions = JSON.parse(JSON.stringify(rawQuestions));
+
+            // 3. Trộn CÂU HỎI dựa trên mã đề
+            examQuestions = shuffleWithSeed(clonedQuestions, examCode);
+
+            // 4. Trộn ĐÁP ÁN dựa trên mã đề + index câu hỏi
+            examQuestions = examQuestions.map((q, index) => {
+                return {
+                    ...q,
+                    answers: shuffleWithSeed(q.answers, examCode + index)
+                };
+            });
+
+            // 5. Khởi tạo mảng lưu trữ kết quả của người dùng
+            userAnswers = new Array(examQuestions.length).fill(null);
+            score = 0;
+
+            // Chuyển màn hình
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+
+            renderQuestions();
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        // --- LÀM LẠI ĐỀ (SẼ SINH MÃ ĐỀ MỚI) ---
+        function restartQuiz() {
+            if(confirm("Hệ thống sẽ tạo ra một Mã Đề hoàn toàn mới để bạn luyện tập. Bạn đã sẵn sàng chưa?")) {
+                startQuiz();
+            }
+        }
+
+        // --- HIỂN THỊ CÂU HỎI ---
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            examQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `question-${index}`;
+
+                let answersHtml = '';
+                q.answers.forEach((ans, ansIndex) => {
+                    answersHtml += `
+                        <label class="answer-label" id="label-${index}-${ansIndex}" onclick="selectAnswer(${index}, ${ansIndex})">
+                            <input type="radio" name="question${index}" value="${ansIndex}">
+                            <div class="choice-letter">${choiceLabels[ansIndex]}</div>
+                            <div class="choice-text">${ans.text}</div>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <span class="question-number">Câu ${index + 1}</span>
+                    <div class="question-text">${q.question}</div>
+                    <div class="answers-grid">
+                        ${answersHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- XỬ LÝ KHI CHỌN ĐÁP ÁN (CHẾ ĐỘ LUYỆN TẬP) ---
+        function selectAnswer(qIndex, ansIndex) {
+            const isCorrect = examQuestions[qIndex].answers[ansIndex].correct;
+            
+            // Lưu kết quả 
+            userAnswers[qIndex] = {
+                qIndex: qIndex,
+                ansIndex: ansIndex,
+                isCorrect: isCorrect
+            };
+
+            // DOM Elements
+            const card = document.getElementById(`question-${qIndex}`);
+            const allLabels = card.querySelectorAll('.answer-label');
+            const selectedLabel = document.getElementById(`label-${qIndex}-${ansIndex}`);
+
+            // 1. Reset styles cũ (cho phép chọn lại)
+            allLabels.forEach(lbl => {
+                lbl.classList.remove('immediate-correct', 'immediate-wrong');
+                // Xóa các dòng thông báo cũ
+                const existingBadge = lbl.querySelector('.status-badge');
+                if (existingBadge) existingBadge.remove();
+            });
+            card.classList.remove('status-correct', 'status-wrong');
+            card.classList.add('answered');
+
+            // Hàm helper để thêm text
+            const addStatusText = (label, text, type) => {
+                const badge = document.createElement('div');
+                badge.className = `status-badge ${type}`;
+                badge.innerText = text;
+                label.appendChild(badge);
+            }
+
+            // 2. Xử lý logic hiển thị
+            if (isCorrect) {
+                // TRƯỜNG HỢP CHỌN ĐÚNG
+                selectedLabel.classList.add('immediate-correct');
+                card.classList.add('status-correct');
+                addStatusText(selectedLabel, '✔ Chính xác', 'correct');
+            } else {
+                // TRƯỜNG HỢP CHỌN SAI
+                selectedLabel.classList.add('immediate-wrong');
+                card.classList.add('status-wrong');
+                addStatusText(selectedLabel, '✘ Sai', 'wrong');
+
+                // Tự động tìm và highlight đáp án đúng
+                examQuestions[qIndex].answers.forEach((ans, idx) => {
+                    if(ans.correct) {
+                        const correctLabel = document.getElementById(`label-${qIndex}-${idx}`);
+                        correctLabel.classList.add('immediate-correct');
+                        addStatusText(correctLabel, '✔ Đáp án đúng', 'correct');
+                    }
+                });
+            }
+
+            updateProgress();
+
+            // --- TỰ ĐỘNG CHUYỂN CÂU (LOGIC MỚI) ---
+            // Kiểm tra xem có phải câu cuối không
+            if (qIndex < examQuestions.length - 1) {
+                // Đặt timeout 1 giây (1000ms) để người dùng kịp xem kết quả
+                setTimeout(() => {
+                    const nextQuestionId = `question-${qIndex + 1}`;
+                    const nextElement = document.getElementById(nextQuestionId);
+                    
+                    if (nextElement) {
+                        // Cuộn mượt mà đến câu tiếp theo, căn vào giữa màn hình
+                        nextElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 1000); 
+            }
+        }
+
+        // --- CẬP NHẬT TIẾN ĐỘ ---
+        function updateProgress() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const total = examQuestions.length;
+            const percent = (answeredCount / total) * 100;
+            
+            document.getElementById('progress-fill').style.width = `${percent}%`;
+            document.getElementById('progress-text').innerText = `Đã làm ${answeredCount}/${total} câu`;
+        }
+
+        // --- KẾT THÚC & TỔNG KẾT ---
+        function submitQuiz() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            if (answeredCount < examQuestions.length) {
+                if (!confirm(`Bạn mới học ${answeredCount}/${examQuestions.length} câu. Bạn có chắc chắn muốn kết thúc không?`)) {
+                    return;
+                }
+            }
+
+            score = userAnswers.filter(a => a && a.isCorrect).length;
+            
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            document.getElementById('final-score').innerText = `${score}/${examQuestions.length}`;
+            document.getElementById('score-percent').innerText = `Tỉ lệ đúng: ${Math.round((score / examQuestions.length) * 100)}%`;
+
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>

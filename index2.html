@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Thi Trắc Nghiệm Lịch Sử - Đúng/Sai (Có Đảo Đề)</title>
+    <style>
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1E40AF;
+            --accent-orange: #F97316;
+            --bg-light: #F3F4F6;
+            --white: #FFFFFF;
+            --success: #22C55E;
+            --error: #EF4444;
+            --text-main: #1F2937;
+            --text-light: #6B7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- UI Components --- */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Home Screen --- */
+        .home-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .home-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .home-desc {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .btn-start {
+            background-color: var(--accent-orange);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-start:hover {
+            background-color: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        /* --- Quiz Screen --- */
+        .quiz-header {
+            padding: 20px;
+            background: var(--white);
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: #e5e7eb;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary-blue);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-number {
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .score-badge {
+            background: #eff6ff;
+            color: var(--primary-dark);
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .question-card {
+            padding: 25px;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text-main);
+            background: #f8fafc;
+            padding: 15px;
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* --- Statement Rows --- */
+        .statement-row {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+
+        .statement-row:hover {
+            border-color: #cbd5e1;
+        }
+
+        .statement-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .statement-text {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .statement-label {
+            font-weight: 700;
+            margin-right: 5px;
+            color: var(--primary-blue);
+        }
+
+        .options-group {
+            display: flex;
+            gap: 10px;
+            min-width: 140px;
+        }
+
+        .btn-option {
+            flex: 1;
+            padding: 8px 0;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-light);
+        }
+
+        .btn-option:hover:not(:disabled) {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* --- Feedback Styles --- */
+        .feedback-msg {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Correct State */
+        .btn-option.correct {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        /* Incorrect State */
+        .btn-option.wrong {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: white;
+            opacity: 0.5;
+        }
+        
+        .statement-row.answered-correctly {
+            background-color: #f0fdf4; /* Light green bg */
+            border-color: #bbf7d0;
+        }
+        
+        .statement-row.answered-wrongly {
+            background-color: #fef2f2; /* Light red bg */
+            border-color: #fecaca;
+        }
+
+        .msg-correct {
+            color: var(--success);
+            display: block;
+        }
+
+        .msg-wrong {
+            color: var(--error);
+            display: block;
+        }
+
+        /* --- Footer --- */
+        .quiz-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background: #f9fafb;
+        }
+
+        .btn-next {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-next:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* --- Result Screen --- */
+        .result-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .score-label {
+            font-size: 0.8rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .statement-content {
+                flex-direction: column;
+            }
+            .options-group {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .btn-option {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+
+        <!-- 1. HOME SCREEN -->
+        <div id="home-screen" class="home-screen">
+            <span class="logo-icon">📚</span>
+            <h1 class="home-title">HỆ THỐNG TRẮC NGHIỆM ĐÚNG/SAI</h1>
+            <p class="home-desc">Lịch Sử 12: Ngoại giao & Cách mạng<br><b>Tính năng mới:</b> Tự động đảo câu hỏi & đảo đáp án</p>
+            <button class="btn-start" onclick="startQuiz()">Bắt đầu làm bài</button>
+        </div>
+
+        <!-- 2. QUIZ SCREEN -->
+        <div id="quiz-screen" class="hidden">
+            <div class="quiz-header">
+                <!-- Hiển thị số câu hiện tại và ID gốc của câu hỏi để tra cứu -->
+                <span class="question-number" id="q-number">Câu 1</span>
+                <span class="score-badge">Điểm: <span id="current-score">0</span></span>
+            </div>
+
+            <div class="question-card">
+                <div class="question-text" id="q-text">
+                    <!-- Nội dung câu hỏi load ở đây -->
+                </div>
+
+                <div id="statements-list">
+                    <!-- 4 Ý A, B, C, D sẽ render ở đây -->
+                </div>
+            </div>
+
+            <div class="quiz-footer">
+                <button id="btn-next" class="btn-next hidden" onclick="nextQuestion()">
+                    Câu tiếp theo ➜
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. RESULT SCREEN -->
+        <div id="result-screen" class="hidden result-screen">
+            <div class="score-circle">
+                <span id="final-score">0</span>
+                <span class="score-label">ĐIỂM TỔNG</span>
+            </div>
+            <h2 style="margin-bottom: 10px;">Hoàn thành bài thi!</h2>
+            <p style="color: #666; margin-bottom: 30px;">Hệ thống đã tự động tạo mã đề mới cho lần làm sau.</p>
+            <button class="btn-start" onclick="startQuiz()">Làm lại (Đề mới)</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu câu hỏi GỐC
+        const quizDataOriginal = [
+            {
+                id: 71,
+                content: "Đọc đoạn tư liệu về Phan Bội Châu và Phan Châu Trinh: 'Một số người cho rằng việc khôi phục chủ quyền quốc gia...'",
+                statements: [
+                    { id: 'a', text: "Mục đích hoạt động đối ngoại của Phan Bội Châu là tìm kiếm giúp đỡ từ bên ngoài để đấu tranh giành độc lập cho dân tộc.", answer: true },
+                    { id: 'b', text: "Cả Phan Bội Châu và Phan Châu Trinh đều không có chủ trương cần viện bên ngoài mà dựa vào lực lượng của bản thân mình.", answer: false },
+                    { id: 'c', text: "Mục đích hoạt động đối ngoại của Phan Châu Trinh là tìm kiếm giúp đỡ từ bên ngoài để chống Pháp giành độc lập cho dân tộc.", answer: false },
+                    { id: 'd', text: "Cả Phan Bội Châu và Phan Châu Trinh đều có chủ trương cầu viện bên ngoài để chống Pháp giành độc lập cho dân tộc.", answer: false }
+                ]
+            },
+            {
+                id: 72,
+                content: "Đọc đoạn tư liệu về Nguyễn Ái Quốc tại Đại hội Tours (Pháp): 'Nhân danh toàn thể loài người...'",
+                statements: [
+                    { id: 'a', text: "Đoạn trích cho thấy Nguyễn Ái Quốc đã có những hoạt động tích cực trong Quốc tế Cộng sản.", answer: false },
+                    { id: 'b', text: "Đoạn trích cho thấy Nguyễn Ái Quốc đã có những hoạt động tích cực trong thời gian hoạt động ở Pháp.", answer: true },
+                    { id: 'c', text: "Hoạt động của Nguyễn Ái Quốc giúp cho nhân dân tiến bộ Pháp hiểu rõ hơn cuộc chiến tranh của người Pháp ở Việt Nam.", answer: true },
+                    { id: 'd', text: "Nguyễn Ái Quốc là Đảng viên Đảng Cộng sản Việt Nam duy nhất có khả năng phát biểu tại Đại hội của Đảng Xã hội Pháp.", answer: false }
+                ]
+            },
+            {
+                id: 73,
+                content: "Đọc đoạn tư liệu: '...Từ khi thành lập, Đảng Cộng sản Đông Dương xác định: Tuyên truyền dân chúng Đông Dương nhận thấy sự can hệ...'",
+                statements: [
+                    { id: 'a', text: "Tầm quan trọng của mối quan hệ với cách mạng thế giới trong tiến trình giải phóng dân tộc của ba nước Đông Dương.", answer: true },
+                    { id: 'b', text: "Cách mạng Đông Dương muốn giành thắng lợi cần phải xóa bỏ tư duy dân tộc hẹp hòi, thay vào đó là liên kết quốc tế.", answer: true },
+                    { id: 'c', text: "Các dân tộc Đông Dương muốn giải phóng chỉ có thể trông cậy vào bên ngoài, liên lạc với phong trào công nhân quốc tế.", answer: false },
+                    { id: 'd', text: "Giải phóng dân tộc ở Đông Dương là nhiệm vụ của nhân dân trên thế giới đấu tranh cho sự phát triển bền vững của nhân loại.", answer: false }
+                ]
+            },
+            {
+                id: 74,
+                content: "Đọc đoạn tư liệu về hoạt động của Hồ Chí Minh giai đoạn 1942-1944: 'Ngày 13-8-1942, Hồ Chí Minh sang Trung Quốc...'",
+                statements: [
+                    { id: 'a', text: "Trong Cách mạng tháng Tám năm 1945, Mặt trận Việt Minh phối hợp với quân Đồng minh để tiêu diệt hoàn toàn phát xít Nhật Bản.", answer: false },
+                    { id: 'b', text: "Trong giai đoạn 1942 - 1944, Việt Nam đã tham gia khối Đồng minh để chống phát xít Nhật Bản, bảo vệ nền hòa bình của thế giới.", answer: false },
+                    { id: 'c', text: "Thông qua Mặt trận Việt Minh, hoạt động đối ngoại của Đảng thể hiện chủ trương đứng về phía Đồng minh nhằm chống phát xít Nhật Bản.", answer: true },
+                    { id: 'd', text: "Trong Cách mạng tháng Tám năm 1945, Mặt trận Việt Minh đã có sách lược tranh thủ các lực lượng Đồng minh nhằm chống phát xít Nhật Bản.", answer: true }
+                ]
+            },
+            {
+                id: 75,
+                content: "Đọc đoạn tư liệu: 'Đầu năm 1905, Phan Bội Châu sang Nhật Bản tìm kiếm sự giúp đỡ về khí giới và đào tạo nhân lực...'",
+                statements: [
+                    { id: 'a', text: "Hoạt động đối ngoại tiêu biểu của Phan Bội Châu là tham gia thành lập tổ chức có mục tiêu đoàn kết quốc tế.", answer: true },
+                    { id: 'b', text: "Phan Bội Châu cử người liên lạc với tổ chức Công sứ Đức, Đại sứ quán Nga để lên án các tổ chức này.", answer: false },
+                    { id: 'c', text: "Phan Bội Châu chủ trương tranh thủ sự ủng hộ của lực lượng cách mạng Việt Nam cấp tiến tại Pháp.", answer: true },
+                    { id: 'd', text: "Hoạt động Phan Bội Châu đã tạo thế đứng cho các nhà yêu nước khác của Việt Nam hoạt động ở Pháp.", answer: false }
+                ]
+            },
+            {
+                id: 76,
+                content: "Đọc đoạn tư liệu về Nguyễn Ái Quốc (1911-1922): 'Trong những năm 1911 - 1922, Nguyễn Ái Quốc đã đi qua nhiều quốc gia...'",
+                statements: [
+                    { id: 'a', text: "Trong thời gian 1919 - 1921, Nguyễn Ái Quốc đã liên lạc với phong trào chống Nhật Bản ở một số nước Đông Nam Á.", answer: false },
+                    { id: 'b', text: "Việc thành lập Hội Liên hiệp thuộc địa bước đầu đặt cơ sở quan hệ giữa cách mạng Việt Nam với phong trào cách mạng thế giới.", answer: true },
+                    { id: 'c', text: "Trong thời gian 1919 - 1921, hoạt động của Nguyễn Ái Quốc đã góp phần thắt chặt quan hệ Đồng minh chống phát xít.", answer: false },
+                    { id: 'd', text: "Trong thời gian 1919 - 1921, Nguyễn Ái Quốc đã góp phần xác lập quan hệ giữa cách mạng Việt Nam với Quốc tế Cộng sản.", answer: false }
+                ]
+            },
+            {
+                id: 77,
+                content: "Đọc đoạn tư liệu giai đoạn 1930-1940: 'Đảng Cộng sản Đông Dương duy trì liên lạc với Quốc tế Cộng sản...'",
+                statements: [
+                    { id: 'a', text: "Trong giai đoạn 1930 - 1940, Đảng Cộng sản Đông Dương lập Tiểu ban vận động Hoa kiều, giúp người Nhật tổ chức Hội Cứu quốc.", answer: false },
+                    { id: 'b', text: "Đảng Cộng sản Đông Dương chủ trương ủng hộ phong trào cách mạng thế giới và ủng hộ phong trào vô sản và công nhân quốc tế.", answer: true },
+                    { id: 'c', text: "Trong giai đoạn 1930 - 1940, Đảng Cộng sản Đông Dương thành lập Ban chỉ huy ở hải ngoại của Đảng Cộng sản Đông Dương.", answer: true },
+                    { id: 'd', text: "Trong giai đoạn 1930 - 1940, Đảng Cộng sản Đông Dương ủng hộ Liên Xô đấu tranh chống phát xít, bảo vệ hòa bình thế giới.", answer: false }
+                ]
+            },
+            {
+                id: 78,
+                content: "Đọc đoạn tư liệu về Mặt trận Việt Minh: 'Thông qua Mặt trận Việt Minh, hoạt động đối ngoại của Đảng Cộng sản Đông Dương...'",
+                statements: [
+                    { id: 'a', text: "Mặt trận Việt Minh chủ trương đứng về phía lực lượng Đồng minh trong cuộc chiến chống quân phiệt Nhật Bản.", answer: true },
+                    { id: 'b', text: "Hoạt động đối ngoại của Mặt trận Việt Minh nhằm tìm kiếm sự ủng hộ, giúp đỡ của quốc tế cho cách mạng Việt Nam.", answer: true },
+                    { id: 'c', text: "Mặt trận Việt Minh phối hợp với quân Liên Xô tiến hành tiêu diệt quân phát xít ở mặt trận châu Á - Thái Bình Dương.", answer: false },
+                    { id: 'd', text: "Mặt trận Việt Minh chủ trương trung lập trong cuộc chiến chống chủ nghĩa phát xít để tập trung giải phóng dân tộc.", answer: false }
+                ]
+            },
+            {
+                id: 79,
+                content: "Đọc đoạn tư liệu: 'Như vậy, ngay từ những ngày đầu tiên của chính quyền cách mạng, đường lối ngoại giao...'",
+                statements: [
+                    { id: 'a', text: "Ngoại giao của Chính phủ Việt Nam sau năm 1945 dựa trên nguyên tắc hòa bình, hữu nghị, bình đẳng và hợp tác.", answer: true },
+                    { id: 'b', text: "Sau năm 1945, hoạt động ngoại giao của Nhà nước bắt đầu hình thành và bước đầu đạt nhiều kết quả tích cực.", answer: true },
+                    { id: 'c', text: "Đối ngoại của nước Việt Nam Dân chủ Cộng hòa sau khi ra đời là 'cứng rắn về sách lược, mềm dẻo về nguyên tắc'.", answer: false },
+                    { id: 'd', text: "Sau khi ra đời, nước Việt Nam Dân chủ Cộng hòa chủ trương đóng cửa, không giao hữu với các nước bên ngoài.", answer: false }
+                ]
+            },
+            {
+                id: 80,
+                content: "Đọc đoạn tư liệu: 'Ngày 03 - 10 - 1945, Bộ Ngoại giao Chính phủ lâm thời... ra Thông cáo về chính sách đối ngoại...'",
+                statements: [
+                    { id: 'a', text: "Hoạt động đối ngoại sau năm 1945 trở thành một mặt trận quan trọng trong kháng chiến chống Pháp.", answer: false },
+                    { id: 'b', text: "Các hoạt động đối ngoại thể hiện một bước lùi của Chính phủ Việt Nam Dân chủ Cộng hòa.", answer: false },
+                    { id: 'c', text: "Các hoạt động đối ngoại góp phần nâng cao địa vị pháp lý của nước Việt Nam Dân chủ Cộng hòa.", answer: true },
+                    { id: 'd', text: "Những bức thư và điện góp phần xác lập vị thế chủ nhà trong việc giao tiếp với các nước bên ngoài.", answer: true }
+                ]
+            },
+            {
+                id: 81,
+                content: "Đọc đoạn tư liệu về sự công nhận quốc tế năm 1950: 'Ngày 18 tháng 01, Chính phủ Cộng hòa Nhân dân Trung Hoa chính thức công nhận...'",
+                statements: [
+                    { id: 'a', text: "Từ những năm 50 của thế kỉ XX, hậu phương kháng chiến của nhân dân Việt Nam được mở rộng về không gian địa lý.", answer: true },
+                    { id: 'b', text: "Trung Quốc và Liên Xô đặt quan hệ ngoại giao từ năm 1950 góp phần phá vỡ tình thế Việt Nam bị bao vây và cô lập.", answer: true },
+                    { id: 'c', text: "Thắng lợi của ngoại giao từ năm 1950 làm cho nhân dân thế giới hiểu rõ hơn cuộc đấu tranh chính nghĩa của Việt Nam.", answer: true },
+                    { id: 'd', text: "Các nước đặt quan hệ ngoại giao với Việt Nam từ năm 1950 là thắng lợi ngoại giao lớn nhất trong kháng chiến chống Pháp.", answer: false }
+                ]
+            },
+            {
+                id: 82,
+                content: "Đọc đoạn tư liệu về Hiệp định Pari: 'Đặt bút ký vào bản Hiệp định Pari lịch sử, tôi vô cùng xúc động...'",
+                statements: [
+                    { id: 'a', text: "Việc ký Hiệp định Pari là kết quả của cuộc đấu tranh kiên cường, bất khuất của quân dân ta trên cả hai miền đất nước.", answer: true },
+                    { id: 'b', text: "Việc ký Hiệp định Pari là thắng lợi quan trọng, thể hiện tính tích cực và chủ động trong đấu tranh với kẻ thù xâm lược.", answer: true },
+                    { id: 'c', text: "Hiệp định Pari được ký kết đánh dấu cuộc kháng chiến chống Mỹ, cứu nước của quân dân Việt Nam đã thắng lợi hoàn toàn.", answer: false },
+                    { id: 'd', text: "Hiệp định Pari được ký kết đánh dấu hoàn thành cuộc cách mạng dân tộc dân chủ nhân dân trên cả hai miền đất nước.", answer: false }
+                ]
+            },
+            {
+                id: 83,
+                content: "Đọc đoạn tư liệu: 'Năm 1945, Nhà nước Việt Nam Dân chủ Cộng hòa vừa mới ra đời đã phải đối diện với rất nhiều thách thức...'",
+                statements: [
+                    { id: 'a', text: "Sau năm 1945, hoạt động đối ngoại của Chính phủ Việt Nam Dân chủ Cộng hòa nhằm tranh thủ sự ủng hộ tích cực của quốc tế.", answer: true },
+                    { id: 'b', text: "Sau năm 1945, hoạt động đối ngoại của Chính phủ Việt Nam Dân chủ Cộng hòa nhằm củng cố khối đoàn kết chống phát xít.", answer: false },
+                    { id: 'c', text: "Sau năm 1945, hoạt động đối ngoại của Chính phủ Việt Nam Dân chủ Cộng hòa nhằm bảo vệ vững chắc thành quả cách mạng.", answer: true },
+                    { id: 'd', text: "Sau năm 1945, hoạt động đối ngoại của Chính phủ Việt Nam Dân chủ Cộng hòa nhằm bảo vệ chính quyền cách mạng non trẻ.", answer: true }
+                ]
+            },
+            {
+                id: 84,
+                content: "Đọc đoạn tư liệu 1950-1954: 'Từ năm 1950 đến năm 1954, thiết lập quan hệ ngoại giao với các nước xã hội chủ nghĩa...'",
+                statements: [
+                    { id: 'a', text: "Liên minh nhân dân Việt - Miên - Lào thành lập đã tăng cường khối đoàn kết ba nước trong đấu tranh chống kẻ thù chung.", answer: true },
+                    { id: 'b', text: "Hiệp định Giơ-ne-vơ (1954) là văn bản pháp lý quốc tế đầu tiên công nhận đầy đủ các quyền dân tộc cơ bản của nhân dân Việt Nam.", answer: true },
+                    { id: 'c', text: "Hiệp định Giơ-ne-vơ (1954) phản ánh đầy đủ những thắng lợi của quân dân Việt Nam đã giành được trên chiến trường.", answer: false },
+                    { id: 'd', text: "Từ năm 1950 - 1954, hoạt động đối ngoại của Việt Nam diễn ra trong bối cảnh Việt Nam đã thoát ra khỏi tình thế bị bao vây và cô lập.", answer: false }
+                ]
+            },
+            {
+                id: 85,
+                content: "Đọc đoạn tư liệu sau Hiệp định Giơ-ne-vơ: 'Sau Hiệp định Giơ-ne-vơ về Đông Dương được kí kết, hoạt động đối ngoại...'",
+                statements: [
+                    { id: 'a', text: "Ngay sau năm 1954, hoạt động đối ngoại của Việt Nam nhằm mục đích tố cáo bản chất xâm lược Việt Nam của đế quốc Mĩ.", answer: true },
+                    { id: 'b', text: "Ngay sau năm 1954, hoạt động đối ngoại của Việt Nam nhằm mục đích đấu tranh đòi thi hành Hiệp định Giơ-ne-vơ.", answer: true },
+                    { id: 'c', text: "Tranh thủ sự giúp đỡ của quốc tế là chủ trương lớn, mang tính quyết định thắng lợi của cuộc kháng chiến chống Mĩ.", answer: false },
+                    { id: 'd', text: "Hoạt động đối ngoại sau năm 1954 góp phần xây dựng chủ nghĩa xã hội trên cả nước, đánh bại các chiến lược chiến tranh của Mĩ.", answer: false }
+                ]
+            },
+            {
+                id: 86,
+                content: "Đọc đoạn tư liệu 1965-1975: 'Giai đoạn 1965 - 1975, hoạt động đối ngoại Việt Nam đã triển khai các nhiệm vụ...'",
+                statements: [
+                    { id: 'a', text: "Trong giai đoạn 1965 - 1975, Việt Nam đẩy mạnh kết hợp đấu tranh trên mặt trận quân sự với đàm phán trên mặt trận ngoại giao.", answer: false },
+                    { id: 'b', text: "Trong giai đoạn 1965 - 1975, hoạt động đối ngoại của Việt Nam nhằm hoàn thành cuộc cách mạng dân tộc dân chủ nhân dân ở miền Nam.", answer: true },
+                    { id: 'c', text: "Trong giai đoạn 1965 - 1975, hoạt động đối ngoại của Việt Nam góp phần hình thành phong trào nhân dân Mĩ chống cuộc chiến tranh của Mĩ ở Việt Nam.", answer: true },
+                    { id: 'd', text: "Trong giai đoạn 1965 - 1975, hoạt động đối ngoại của Việt Nam quyết định kết thúc thắng lợi cuộc kháng chiến chống Mĩ của quân dân Việt Nam.", answer: false }
+                ]
+            }
+        ];
+
+        // Global Variables
+        let currentQuestionIdx = 0;
+        let totalScore = 0;
+        let currentQuestionStatementsAnswered = 0;
+        let currentSessionData = []; // Biến chứa dữ liệu đã xáo trộn cho phiên làm bài hiện tại
+
+        // Elements
+        const homeScreen = document.getElementById('home-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const qText = document.getElementById('q-text');
+        const qNumber = document.getElementById('q-number');
+        const statementsList = document.getElementById('statements-list');
+        const nextBtn = document.getElementById('btn-next');
+        const currentScoreEl = document.getElementById('current-score');
+        const progressBar = document.getElementById('progress-bar');
+        const finalScoreEl = document.getElementById('final-score');
+
+        // Hàm xáo trộn mảng (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Functions
+        function startQuiz() {
+            // Reset UI
+            homeScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            // 1. Tạo bản sao sâu của dữ liệu để không ảnh hưởng dữ liệu gốc
+            // 2. Xáo trộn thứ tự các câu hỏi
+            // 3. Xáo trộn thứ tự các ý A,B,C,D bên trong mỗi câu hỏi
+            currentSessionData = quizDataOriginal.map(q => ({
+                ...q,
+                statements: shuffleArray([...q.statements]) // Xáo trộn ý
+            }));
+            
+            shuffleArray(currentSessionData); // Xáo trộn câu hỏi
+
+            currentQuestionIdx = 0;
+            totalScore = 0;
+            updateScoreUI();
+            renderQuestion();
+        }
+
+        function updateScoreUI() {
+            currentScoreEl.textContent = totalScore;
+        }
+
+        function updateProgressBar() {
+            const percent = ((currentQuestionIdx) / currentSessionData.length) * 100;
+            progressBar.style.width = `${percent}%`;
+        }
+
+        function renderQuestion() {
+            const data = currentSessionData[currentQuestionIdx];
+            
+            // Reset state
+            currentQuestionStatementsAnswered = 0;
+            nextBtn.classList.add('hidden');
+            statementsList.innerHTML = '';
+            
+            // Update Text
+            // Hiển thị số thứ tự trong đề thi, kèm ID gốc để học sinh tra cứu nếu cần
+            qNumber.textContent = `Câu ${currentQuestionIdx + 1}/${currentSessionData.length} (Gốc: Câu ${data.id})`;
+            qText.textContent = data.content;
+            
+            updateProgressBar();
+
+            // Render Statements (đã được xáo trộn)
+            data.statements.forEach((stmt, index) => {
+                const row = document.createElement('div');
+                row.className = 'statement-row';
+                row.id = `row-${index}`;
+                
+                // Nhãn hiển thị luôn là a, b, c, d theo thứ tự xuất hiện (mặc dù nội dung bên trong đã bị đảo)
+                const labels = ['a', 'b', 'c', 'd'];
+                const label = labels[index];
+
+                row.innerHTML = `
+                    <div class="statement-content">
+                        <div class="statement-text">
+                            <span class="statement-label">${label}.</span> ${stmt.text}
+                        </div>
+                        <div class="options-group">
+                            <button class="btn-option" onclick="checkAnswer(${index}, true, this)">Đúng</button>
+                            <button class="btn-option" onclick="checkAnswer(${index}, false, this)">Sai</button>
+                        </div>
+                    </div>
+                    <div class="feedback-msg" id="feedback-${index}"></div>
+                `;
+                statementsList.appendChild(row);
+            });
+        }
+
+        function checkAnswer(stmtIndex, userAnswer, btnElement) {
+            // Prevent re-clicking
+            const parentRow = document.getElementById(`row-${stmtIndex}`);
+            const buttons = parentRow.querySelectorAll('.btn-option');
+            buttons.forEach(btn => btn.disabled = true);
+
+            // Lấy đáp án đúng từ dữ liệu hiện tại (đã xáo trộn)
+            const correctAnswer = currentSessionData[currentQuestionIdx].statements[stmtIndex].answer;
+            const feedbackEl = document.getElementById(`feedback-${stmtIndex}`);
+
+            let isCorrect = (userAnswer === correctAnswer);
+
+            if (isCorrect) {
+                // UI: Correct
+                btnElement.classList.add('correct');
+                parentRow.classList.add('answered-correctly');
+                feedbackEl.innerHTML = `Chính xác!`;
+                feedbackEl.className = 'feedback-msg msg-correct';
+                
+                totalScore++; 
+                updateScoreUI();
+            } else {
+                // UI: Wrong
+                btnElement.classList.add('wrong');
+                parentRow.classList.add('answered-wrongly');
+                
+                // Highlight the correct button visually (find the other button)
+                const otherBtn = Array.from(buttons).find(b => b !== btnElement);
+                otherBtn.style.borderColor = "var(--success)";
+                otherBtn.style.color = "var(--success)";
+
+                const correctText = correctAnswer ? "Đúng" : "Sai";
+                feedbackEl.innerHTML = `Sai rồi! Đáp án là: ${correctText}`;
+                feedbackEl.className = 'feedback-msg msg-wrong';
+            }
+
+            // Logic to show Next button
+            currentQuestionStatementsAnswered++;
+            if (currentQuestionStatementsAnswered === 4) {
+                nextBtn.classList.remove('hidden');
+                
+                // If last question, change text
+                if (currentQuestionIdx === currentSessionData.length - 1) {
+                    nextBtn.innerHTML = "Xem kết quả 🏁";
+                }
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            
+            if (currentQuestionIdx < currentSessionData.length) {
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // Calculate final stats
+            const totalStatements = currentSessionData.length * 4;
+            finalScoreEl.textContent = `${totalScore}/${totalStatements}`;
+            
+            // Full width progress bar
+            progressBar.style.width = '100%';
+        }
+    </script>
+</body>
+</html>
